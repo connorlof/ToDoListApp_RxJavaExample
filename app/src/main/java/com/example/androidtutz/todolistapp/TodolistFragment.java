@@ -25,6 +25,8 @@ import com.example.androidtutz.todolistapp.adapter.ToDoListAdapter;
 import com.example.androidtutz.todolistapp.adapter.RecyclerTouchListener;
 import com.example.androidtutz.todolistapp.data.ToDoListItem;
 import com.example.androidtutz.todolistapp.data.ToDoDataManager;
+import com.jakewharton.rxbinding2.widget.RxTextView;
+import com.jakewharton.rxbinding2.widget.TextViewTextChangeEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -164,6 +166,32 @@ public class TodolistFragment extends Fragment {
 
             }
         });
+
+        compositeDisposable.add(
+                RxTextView.textChangeEvents(searchEditText)
+                        .skipInitialValue()
+                        .debounce(300, TimeUnit.MILLISECONDS)
+                        .distinctUntilChanged()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(new DisposableObserver<TextViewTextChangeEvent>() {
+                            @Override
+                            public void onNext(TextViewTextChangeEvent textViewTextChangeEvent) {
+                                goalAdapter.getFilter().filter(textViewTextChangeEvent.text());
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+
+                            }
+
+                            @Override
+                            public void onComplete() {
+
+                            }
+                        })
+        );
+
 
 
         setRecyclerView();
